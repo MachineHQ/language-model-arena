@@ -136,3 +136,6 @@ We are hoping to see one model outperform the other in some benchmarks.
 The benchmarks are selected to test the reasoning capabilities of the models: (hellaswag,arc_easy,mathqa,truthfulqa,drop,arc_challenge,gsm8k,mmlu_abstract_algebra,mmlu_college_mathematics).
 
 The benchmarks used for eval are also configurable via Workflow inputs.
+
+While this repo is public and we encourage forking, we are not accepting PR's at this time.
+If you have any questions or concerns, please open an issue.
