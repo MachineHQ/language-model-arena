@@ -1,0 +1,111 @@
+name: LLM Eval Benchmarking
+
+on:
+  workflow_dispatch:
+    inputs:
+      model_1:
+        type: string
+        required: false
+        description: 'The first model to benchmark'
+        default: 'Qwen/Qwen2.5-3B-Instruct'
+      model_1_revision:
+        type: string
+        required: false
+        description: 'The first model revision to benchmark'
+        default: 'main'
+      model_2:
+        type: string
+        required: false
+        description: 'The second model to benchmark'
+        default: 'unsloth/Llama-3.1-8B-Instruct'
+      model_2_revision:
+        type: string
+        required: false
+        description: 'The second model revision to benchmark'
+        default: 'main'
+      tasks:
+        type: string
+        required: false
+        description: 'The tasks to benchmark'
+        default: 'hellaswag,arc_easy,mathqa,truthfulqa,drop,arc_challenge,gsm8k,mmlu_abstract_algebra,mmlu_college_mathematics'
+      examples_limit:
+        type: string
+        required: false
+        description: 'The number of examples to use for benchmarking'
+        default: '100'
+
+jobs:
+  benchmark:
+    name: LLM Eval Benchmarking
+    runs-on:
+      - machine
+      - gpu=L40S
+      - cpu=4
+      - ram=32
+      - architecture=x64
+      - tenancy=spot
+    timeout-minutes: 120
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_HUB_ENABLE_HF_TRANSFER: 1
+      HF_HUB_DOWNLOAD_TIMEOUT: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: |
+          uv venv .venv --python=3.10
+          source .venv/bin/activate
+          uv pip install -r requirements.txt
+          deactivate
+          mkdir -p ./benchmarks/
+
+      - name: Benchmark Model 1
+        run: |
+          source .venv/bin/activate
+          lm_eval --model hf \
+              --model_args pretrained=${{ inputs.model_1 }},revision=${{ inputs.model_1_revision }} \
+              --tasks ${{ inputs.tasks }} \
+              --trust_remote_code \
+              --device cuda:0 \
+              --batch_size 48 \
+              --limit ${{ inputs.examples_limit }} \
+              --output_path ./benchmarks/model_1/
+          deactivate
+
+      - name: Benchmark Model 2
+        run: |
+          source .venv/bin/activate
+          lm_eval --model hf \
+              --model_args pretrained=${{ inputs.model_2 }},revision=${{ inputs.model_2_revision }} \
+              --tasks ${{ inputs.tasks }} \
+              --trust_remote_code \
+              --device cuda:0 \
+              --batch_size 48 \
+              --limit ${{ inputs.examples_limit }} \
+              --output_path ./benchmarks/model_2/
+          deactivate
+
+      - name: Generate Benchmark Comparison Chart
+        run: |
+          source .venv/bin/activate
+          ls -l ./benchmarks/
+          python ./llm_benchmark_plotting.py
+          deactivate
+
+      - name: Upload Benchmark Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmarks/
+          retention-days: 90
+
