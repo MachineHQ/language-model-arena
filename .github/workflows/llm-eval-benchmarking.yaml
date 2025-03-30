@@ -34,10 +34,13 @@ on:
         description: 'The number of examples to use for benchmarking'
         default: '100'
       tenancy:
-        type: string
+        type: choice
         required: false
         description: 'The tenancy of the machine'
         default: 'spot'
+        options:
+          - 'spot'
+          - 'on_demand'
 
 jobs:
   benchmark:
