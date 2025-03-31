@@ -1,4 +1,4 @@
-[![Machine](./docs/github-repo-banner.svg)](https://machine.dev/)
+[![Machine](./docs/github-repo-banner.png)](https://machine.dev/)
 
 Machine supercharges your GitHub Workflows with seamless GPU acceleration. Say goodbye to
 the tedious overhead of managing GPU runners and hello to streamlined efficiency. With Machine,
