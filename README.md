@@ -5,36 +5,41 @@ the tedious overhead of managing GPU runners and hello to streamlined efficiency
 developers and organizations can effortlessly scale their AI and machine learning projects,
 shifting focus from infrastructure headaches to innovation and speed.
 
-
 # Language Model Arena
 
-Compare open weight Language Models on a set of benchmarks.
+This repository enables easy comparison of open-weight Language Models using GPU-accelerated benchmarks via GitHub Actions powered by Machine. It leverages the [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness) to evaluate model performance across multiple reasoning and language tasks.
 
-We use the [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness)
-to compare the performance of different models on a set of benchmarks.
+---
 
-## LLM Evaluation Benchmarking
+### ✨ **Key Features**
 
-Why might you want to evaluate a language model?
- 
-There are many reasons, but here are a few:
+- **⚡ GPU Acceleration:** Quickly benchmark large language models using GPU power.
+- **📊 Automated Benchmarking:** Easily compare two language models on a configurable set of tasks.
+- **📈 Visualized Results:** Generate clear comparison charts automatically for straightforward analysis.
+- **🌎 Global Efficiency:** Utilize spot-priced GPU instances globally, optimizing performance and cost.
+- **🚀 Easy Customization:** Configure benchmarks, models, and computational resources through GitHub workflow inputs.
 
-- You want to know how well your model performs on a specific task.
-- You want to compare the performance of different models on a specific task.
-- You want to know which model is best suited for a specific task.
+---
 
+### 📁 **Repository Structure**
 
-## How this repo works
+```
+├── .github/workflows/
+│   └── llm-eval-benchmark.yaml   # Workflow configuration
+└── llm_benchmark_plotting.py     # Script for plotting benchmark comparisons
+```
 
-We can run this workflow in the Actions tab here in Github. The workflow has been configured 
-to respond to a [workflow dispatch](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#workflow_dispatch)
-event so that it can be triggered manually via the UI.
+---
 
-The workflow is defined in the `.github/workflows/llm-eval-benchmark.yaml` file:
+### ▶️ **Getting Started**
+
+#### 1. **Use This Repository as a Template**
+Click the **Use this template** button at the top of this page to quickly create your own benchmarking project.
+
+#### 2. **Configure Your Benchmarking**
+Adjust the workflow parameters directly in GitHub Actions:
 
 ```yaml
-name: LM Eval Benchmarking
-
 on:
   workflow_dispatch:
     inputs:
@@ -70,13 +75,9 @@ on:
         default: '100'
 ```
 
-Here we define the inputs that we can pass to the workflow when we trigger it. We can specify the models
-we want to compare, the revisions of the models, the tasks we want to benchmark, and the number of examples
-we want to use for benchmarking.
-
-Running this workflow on a [Machine](https://machine.dev/) runner is what allows us to use
-these Large Language Models effectively. Without GPU power the tokens per second would be
-too low to be useful.
+#### 3. **Run the Workflow**
+- Manually trigger the workflow via GitHub Actions (**workflow_dispatch**).
+- The workflow will execute on GPU-accelerated Machine runners.
 
 ```yaml
 jobs:
@@ -89,35 +90,11 @@ jobs:
       - ram=32
       - architecture=x64
       - tenancy=spot
+      - regions=us-east-1,us-east-2 # Optional region specification
 ```
 
-Here we define how the job should run. Instead of selecting a github runner, we select a _machine_ runner
-and we also specify the resources we want to use. In this case we are using a `L40S` GPU instance with 4 vCPUs
-and 32GB of RAM. Additionally we set the _tenancy=spot_ so that we can take advantage of the cost savings
-by using a spot runner. Machine searches globally for the lowest spot price and provisions the runner
-in the region with the lowest price.
-
-It is also possible to specify regions for the runner to be provisioned in. This limits the
-search for the lowest spot price to the specified regions. This can be useful if you want to
-ensure that your data stays within a specific region.
-
-```yaml
-jobs:
-  benchmark:
-    name: LLM Eval Benchmarking
-    runs-on:
-      - machine
-      - gpu=L40S
-      - cpu=4
-      - ram=32
-      - architecture=x64
-      - tenancy=spot
-      - regions=us-east-1,us-east-2
-```
-
-The steps in this workflow run a python script that will parse the json created by each
-eval run and will plot the results for us as a comparison of performance between the two
-models:
+#### 4. **Generate and Review Benchmark Results**
+The workflow generates benchmark comparison charts:
 
 ```yaml
 - name: Generate Benchmark Comparison Chart
@@ -126,8 +103,7 @@ models:
     python ./llm_benchmark_plotting.py
 ```
 
-Finally we upload the results which contains the json files and the comparison charts as an
-artifact:
+- Results, including JSON files and visual charts, will be uploaded as artifacts:
 
 ```yaml
 - name: Upload Benchmark Artifacts
@@ -138,12 +114,28 @@ artifact:
     retention-days: 90
 ```
 
-## Notes
-We are hoping to see one model outperform the other in some benchmarks.
+---
 
-The benchmarks are selected to test the reasoning capabilities of the models: (hellaswag,arc_easy,mathqa,truthfulqa,drop,arc_challenge,gsm8k,mmlu_abstract_algebra,mmlu_college_mathematics).
+### 🔑 **Prerequisites**
 
-The benchmarks used for eval are also configurable via Workflow inputs.
+- GitHub account
+- Access to [Machine](https://machine.dev) GPU-powered runners
 
-While this repo is public and we encourage forking, we are not accepting PR's at this time.
-If you have any questions or concerns, please open an issue.
+_No local setup required; all benchmarks run seamlessly through GitHub Actions._
+
+---
+
+### 📄 **License**
+
+This repository is available under the [MIT License](LICENSE).
+
+---
+
+### 📌 **Notes**
+
+- Benchmarks provided are designed to test reasoning capabilities across tasks like:
+  - `hellaswag`, `arc_easy`, `mathqa`, `truthfulqa`, `drop`, `arc_challenge`, `gsm8k`, `mmlu_abstract_algebra`, and `mmlu_college_mathematics`.
+
+- This repository is currently open for use as a template. While public forks are encouraged, we are not accepting Pull Requests at this time.
+
+_For questions or concerns, please open an issue._
