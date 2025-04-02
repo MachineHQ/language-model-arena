@@ -145,6 +145,7 @@ You can download these results after the workflow completes for further analysis
 
 - GitHub account
 - Access to [Machine](https://machine.dev) GPU-powered runners
+- Hugging Face token for model access. Save to repository secrets as `HF_TOKEN`.
 
 _No local setup required; all benchmarks run seamlessly through GitHub Actions._
 
