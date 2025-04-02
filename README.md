@@ -37,7 +37,7 @@ This repository enables easy comparison of open-weight Language Models using GPU
 Click the **Use this template** button at the top of this page to quickly create your own benchmarking project.
 
 #### 2. **Configure Your Benchmarking**
-Adjust the workflow parameters directly in GitHub Actions:
+You can run the benchmarking workflow manually via GitHub Actions using the `workflow_dispatch` trigger. This allows you to input parameters such as which models to compare, which tasks to run, and how many examples to evaluate:
 
 ```yaml
 on:
@@ -75,9 +75,10 @@ on:
         default: '100'
 ```
 
-#### 3. **Run the Workflow**
-- Manually trigger the workflow via GitHub Actions (**workflow_dispatch**).
-- The workflow will execute on GPU-accelerated Machine runners.
+These inputs are configurable directly in the GitHub Actions UI when manually triggering the workflow.
+
+#### 3. **Run the Workflow with GPU Resources**
+The benchmarking job is configured to run on Machine GPU-powered runners. Instead of using standard GitHub-hosted runners, it provisions custom GPU instances with the desired hardware specs:
 
 ```yaml
 jobs:
@@ -90,11 +91,30 @@ jobs:
       - ram=32
       - architecture=x64
       - tenancy=spot
-      - regions=us-east-1,us-east-2 # Optional region specification
 ```
 
+This setup runs on a Machine runner with an L40S GPU, 4 vCPUs, and 32 GB RAM. By specifying `tenancy=spot`, you can take advantage of lower-cost spot pricing. Machine automatically searches globally for the best available spot instance.
+
+To further control where runners are provisioned, you can specify allowed regions:
+
+```yaml
+jobs:
+  benchmark:
+    name: LLM Eval Benchmarking
+    runs-on:
+      - machine
+      - gpu=L40S
+      - cpu=4
+      - ram=32
+      - architecture=x64
+      - tenancy=spot
+      - regions=us-east-1,us-east-2
+```
+
+This limits provisioning to the listed AWS regions.
+
 #### 4. **Generate and Review Benchmark Results**
-The workflow generates benchmark comparison charts:
+The workflow automatically runs evaluation scripts and generates visual comparison charts:
 
 ```yaml
 - name: Generate Benchmark Comparison Chart
@@ -103,7 +123,10 @@ The workflow generates benchmark comparison charts:
     python ./llm_benchmark_plotting.py
 ```
 
-- Results, including JSON files and visual charts, will be uploaded as artifacts:
+These charts compare the performance of both models across the selected tasks.
+
+#### 5. **Export Results as Artifacts**
+All benchmark outputs, including raw JSON and charts, are saved as GitHub Actions artifacts:
 
 ```yaml
 - name: Upload Benchmark Artifacts
@@ -113,6 +136,8 @@ The workflow generates benchmark comparison charts:
     path: benchmarks/
     retention-days: 90
 ```
+
+You can download these results after the workflow completes for further analysis or sharing.
 
 ---
 
